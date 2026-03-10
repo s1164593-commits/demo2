@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Projects | Studio Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Babel for Browser Compilation -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion (UMD Bundle) & Lucide Icons -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: none;
+        }
+        
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @media (max-width: 1024px) {
+            body { cursor: auto; }
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            200: '#DDD6FE',
+                            400: '#A78BFA',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                            900: '#4C1D95',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#FDFCFE] text-[#1E1428]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        window.onload = () => {
+            const { useState, useEffect } = React;
+            
+            const fm = window.FramerMotion || window.Motion;
+            const motion = fm ? fm.motion : null;
+            const AnimatePresence = fm ? fm.AnimatePresence : null;
+
+            if (!motion) {
+                const Fallback = ({ children }) => <div>{children}</div>;
+                window.motion = { div: Fallback, p: Fallback, h1: Fallback, section: Fallback, a: Fallback };
+                window.AnimatePresence = Fallback;
+            }
+
+            const Icon = ({ name, size = 20, className = "" }) => {
+                useEffect(() => {
+                    if (window.lucide) lucide.createIcons();
+                }, [name]);
+                return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+            };
+
+            const CustomCursor = () => {
+                const [position, setPosition] = useState({ x: 0, y: 0 });
+                const [isHovering, setIsHovering] = useState(false);
+
+                useEffect(() => {
+                    const moveCursor = (e) => setPosition({ x: e.clientX, y: e.clientY });
+                    window.addEventListener('mousemove', moveCursor);
+                    return () => window.removeEventListener('mousemove', moveCursor);
+                }, []);
+
+                const MotionDiv = motion ? motion.div : 'div';
+
+                return (
+                    <MotionDiv
+                        className="fixed top-0 left-0 w-6 h-6 rounded-full border-2 border-purple-500 pointer-events-none z-[9999] hidden lg:block"
+                        animate={{
+                            x: position.x - 12,
+                            y: position.y - 12,
+                            scale: isHovering ? 2.5 : 1,
+                            backgroundColor: isHovering ? 'rgba(124, 77, 255, 0.1)' : 'transparent'
+                        }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 250, mass: 0.5 }}
+                    />
+                );
+            };
+
+            const ProjectCard = ({ project, index }) => {
+                const MotionDiv = motion ? motion.div : 'div';
+                return (
+                    <MotionDiv
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="group relative overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-2xl transition-all duration-500"
+                    >
+                        <div className="aspect-[16/10] overflow-hidden">
+                            <img 
+                                src={project.image} 
+                                alt={project.title}
+                                className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                            />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1E1428]/90 via-[#1E1428]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs px-2 py-1 bg-purple-500/80 text-white rounded-full font-medium">{project.category}</span>
+                                <span className="text-xs px-2 py-1 bg-white/20 text-white rounded-full font-medium">{project.year}</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+                            <p className="text-white/80 text-sm line-clamp-2">{project.description}</p>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                                {project.technologies.map((tech, i) => (
+                                    <span key={i} className="text-xs px-2 py-1 bg-white/10 text-white rounded">{tech}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="p-6 group-hover:opacity-0 transition-opacity duration-300">
+                            <span className="text-xs uppercase tracking-widest text-purple-500 font-bold">{project.category}</span>
+                            <h3 className="text-lg font-bold mt-2">{project.title}</h3>
+                            <p className="text-[#5A5266] text-sm mt-2 line-clamp-2">{project.description}</p>
+                        </div>
+                    </MotionDiv>
+                );
+            };
+
+            const AchievementCard = ({ achievement, index }) => {
+                const MotionDiv = motion ? motion.div : 'div';
+                return (
+                    <MotionDiv
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white text-center"
+                    >
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
+                            <Icon name={achievement.icon} size={28} />
+                        </div>
+                        <p className="text-3xl font-black mb-2">{achievement.value}</p>
+                        <p className="text-white/80 text-sm">{achievement.label}</p>
+                    </MotionDiv>
+                );
+            };
+
+            const App = () => {
+                const [isMenuOpen, setIsMenuOpen] = useState(false);
+                const [activeFilter, setActiveFilter] = useState('All');
+                const MotionDiv = motion ? motion.div : 'div';
+                const MotionP = motion ? motion.p : 'p';
+                const MotionH1 = motion ? motion.h1 : 'h1';
+                const MotionH2 = motion ? motion.h2 : 'h2';
+                const AP = AnimatePresence || React.Fragment;
+
+                const projects = [
+                    {
+                        title: "AI-Powered Environmental Monitor",
+                        category: "AI/ML",
+                        description: "Using machine learning to analyze environmental data and predict pollution patterns in urban areas.",
+                        technologies: ["Python", "TensorFlow", "IoT", "AWS"],
+                        image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800",
+                        year: "2025",
+                        featured: true
+                    },
+                    {
+                        title: "Autonomous Drone Navigation System",
+                        category: "Robotics",
+                        description: "Developing computer vision algorithms for autonomous drone flight and obstacle avoidance.",
+                        technologies: ["C++", "OpenCV", "ROS", "Python"],
+                        image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&q=80&w=800",
+                        year: "2025"
+                    },
+                    {
+                        title: "Biomedical Signal Analysis Tool",
+                        category: "Healthcare",
+                        description: "Creating software to analyze ECG and EEG signals for early disease detection.",
+                        technologies: ["MATLAB", "Python", "Signal Processing"],
+                        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80&w=800",
+                        year: "2024"
+                    },
+                    {
+                        title: "Smart City Traffic Optimization",
+                        category: "Data Science",
+                        description: "Analyzing traffic patterns using big data to optimize traffic flow and reduce congestion.",
+                        technologies: ["Python", "Spark", "Tableau", "ML"],
+                        image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&q=80&w=800",
+                        year: "2024",
+                        featured: true
+                    },
+                    {
+                        title: "Renewable Energy Efficiency Model",
+                        category: "Sustainability",
+                        description: "Building predictive models for solar panel efficiency and energy storage optimization.",
+                        technologies: ["Python", "PyTorch", "Data Analysis"],
+                        image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800",
+                        year: "2024"
+                    },
+                    {
+                        title: "Quantum Computing Algorithm",
+                        category: "Research",
+                        description: "Implementing quantum algorithms for optimization problems in logistics.",
+                        technologies: ["Qiskit", "Python", "Quantum ML"],
+                        image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800",
+                        year: "2025"
+                    },
+                    {
+                        title: "Robotic Arm Control System",
+                        category: "Robotics",
+                        description: "Designing precision control systems for industrial robotic arms using advanced kinematics.",
+                        technologies: ["C++", "Arduino", "Control Theory"],
+                        image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800",
+                        year: "2023"
+                    },
+                    {
+                        title: "Natural Language Processing Engine",
+                        category: "AI/ML",
+                        description: "Building an NLP system for multilingual document classification and sentiment analysis.",
+                        technologies: ["Python", "BERT", "PyTorch"],
+                        image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800",
+                        year: "2025",
+                        featured: true
+                    },
+                    {
+                        title: "3D Printed Prosthetics Design",
+                        category: "Healthcare",
+                        description: "Creating affordable 3D-printed prosthetic limbs using biomedical engineering principles.",
+                        technologies: ["CAD", "3D Printing", "Biomechanics"],
+                        image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
+                        year: "2023"
+                    }
+                ];
+
+                const achievements = [
+                    { icon: "trophy", value: "12+", label: "Competition Wins" },
+                    { icon: "flask-conical", value: "25+", label: "Research Papers" },
+                    { icon: "users", value: "50+", label: "Collaborators" },
+                    { icon: "award", value: "$75K", label: "Grants Won" }
+                ];
+
+                const filters = ['All', 'AI/ML', 'Robotics', 'Data Science', 'Healthcare', 'Research', 'Sustainability'];
+
+                const filteredProjects = activeFilter === 'All' 
+                    ? projects 
+                    : projects.filter(p => p.category === activeFilter);
+
+                return (
+                    <div className="min-h-screen bg-[#FDFCFE] text-[#1E1428] selection:bg-purple-100 selection:text-purple-700 overflow-x-hidden">
+                        <CustomCursor />
+
+                        {/* Navigation */}
+                        <nav className="fixed top-0 w-full z-50 px-6 py-8 md:px-12 flex justify-between items-center backdrop-blur-sm bg-white/30">
+                            <MotionDiv 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-2xl font-black tracking-tighter"
+                            >
+                                <a href="aitest4.html">STUDIO<span className="text-purple-600">.</span></a>
+                            </MotionDiv>
+
+                            <div className="hidden md:flex gap-10 text-xs uppercase tracking-[0.2em] font-bold">
+                                <a href="aitest4.html" className="hover:text-purple-600 transition-colors relative group">
+                                    Works
+                                    <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-purple-600 transition-all group-hover:w-full"></span>
+                                </a>
+                                <a href="volunteer.html" className="hover:text-purple-600 transition-colors relative group">
+                                    Volunteer
+                                    <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-purple-600 transition-all group-hover:w-full"></span>
+                                </a>
+                                <a href="stem.html" className="text-purple-600 relative group">
+                                    STEM
+                                    <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-purple-600"></span>
+                                </a>
+                            </div>
+
+                            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                {isMenuOpen ? <Icon name="x" /> : <Icon name="menu" />}
+                            </button>
+                        </nav>
+
+                        {/* Mobile Menu Overlay */}
+                        <AP>
+                            {isMenuOpen && (
+                                <MotionDiv 
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center gap-8 text-3xl font-serif italic"
+                                >
+                                    <a href="aitest4.html" onClick={() => setIsMenuOpen(false)}>Portfolio</a>
+                                    <a href="volunteer.html" onClick={() => setIsMenuOpen(false)}>Volunteer</a>
+                                    <a href="stem.html" onClick={() => setIsMenuOpen(false)}>STEM Projects</a>
+                                </MotionDiv>
+                            )}
+                        </AP>
+
+                        <main className="pt-24">
+                            {/* Hero Section */}
+                            <section className="relative py-20 px-6 md:px-12 lg:px-24 overflow-hidden">
+                                <div className="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-indigo-200/30 blur-[120px] rounded-full"></div>
+                                <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-purple-200/30 blur-[100px] rounded-full"></div>
+                                
+                                <div className="max-w-6xl mx-auto relative z-10">
+                                    <MotionP 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="text-sm uppercase tracking-[0.4em] text-purple-600 font-bold mb-6"
+                                    >
+                                        Science • Technology • Engineering • Math
+                                    </MotionP>
+                                    
+                                    <MotionH1 
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                        className="text-5xl md:text-7xl lg:text-8xl font-serif italic leading-tight tracking-tight"
+                                    >
+                                        STEM <br />
+                                        <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
+                                            Projects.
+                                        </span>
+                                    </MotionH1>
+
+                                    <MotionDiv 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.6 }}
+                                        className="mt-8 max-w-2xl"
+                                    >
+                                        <p className="text-xl text-[#5A5266] leading-relaxed">
+                                            Exploring the frontiers of technology through innovative research, 
+                                            hands-on engineering, and data-driven solutions.
+                                        </p>
+                                    </MotionDiv>
+                                </div>
+                            </section>
+
+                            {/* Achievements Section */}
+                            <section className="py-16 px-6 md:px-12 lg:px-24">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                        {achievements.map((achievement, idx) => (
+                                            <AchievementCard key={idx} achievement={achievement} index={idx} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Research Areas */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24 bg-white">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="text-center mb-16">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-purple-600 font-bold mb-4">Focus Areas</p>
+                                        <h2 className="text-4xl md:text-5xl font-serif italic">Research Interests</h2>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-3 gap-8">
+                                        {[
+                                            { 
+                                                icon: "brain", 
+                                                title: "Artificial Intelligence", 
+                                                desc: "Deep learning, neural networks, and intelligent systems that push the boundaries of what machines can achieve." 
+                                            },
+                                            { 
+                                                icon: "bot", 
+                                                title: "Robotics & Automation", 
+                                                desc: "Designing autonomous systems that interact seamlessly with the physical world." 
+                                            },
+                                            { 
+                                                icon: "dna", 
+                                                title: "Biotechnology", 
+                                                desc: "Applying engineering principles to solve complex biological and healthcare challenges." 
+                                            },
+                                            { 
+                                                icon: "leaf", 
+                                                title: "Sustainable Tech", 
+                                                desc: "Developing eco-friendly technologies for a greener, more sustainable future." 
+                                            },
+                                            { 
+                                                icon: "bar-chart-3", 
+                                                title: "Data Science", 
+                                                desc: "Extracting insights from complex datasets to drive informed decision-making." 
+                                            },
+                                            { 
+                                                icon: "atom", 
+                                                title: "Quantum Computing", 
+                                                desc: "Exploring quantum algorithms and their applications in optimization and cryptography." 
+                                            }
+                                        ].map((area, idx) => (
+                                            <MotionDiv
+                                                key={idx}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                viewport={{ once: true }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                className="p-6 rounded-2xl border border-purple-100 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 group"
+                                            >
+                                                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 mb-4 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                                                    <Icon name={area.icon} size={24} />
+                                                </div>
+                                                <h3 className="text-lg font-bold mb-2">{area.title}</h3>
+                                                <p className="text-[#5A5266] text-sm leading-relaxed">{area.desc}</p>
+                                            </MotionDiv>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Projects Section */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.3em] text-purple-600 font-bold mb-4">Portfolio</p>
+                                            <h2 className="text-4xl md:text-5xl font-serif italic">Featured Projects</h2>
+                                        </div>
+                                    </div>
+
+                                    {/* Filter Buttons */}
+                                    <div className="flex flex-wrap gap-3 mb-12">
+                                        {filters.map((filter) => (
+                                            <button
+                                                key={filter}
+                                                onClick={() => setActiveFilter(filter)}
+                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                    activeFilter === filter 
+                                                        ? 'bg-purple-600 text-white' 
+                                                        : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                                                }`}
+                                            >
+                                                {filter}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {filteredProjects.map((project, idx) => (
+                                            <ProjectCard key={idx} project={project} index={idx} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Publications Section */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24 bg-purple-50">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="text-center mb-16">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-purple-600 font-bold mb-4">Academic</p>
+                                        <h2 className="text-4xl md:text-5xl font-serif italic">Publications & Patents</h2>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        {[
+                                            { title: "Deep Learning Approaches for Urban Traffic Prediction", journal: "IEEE Transactions on Intelligent Transportation Systems", year: "2025", type: "Journal" },
+                                            { title: "Efficient Quantum Algorithms for Supply Chain Optimization", journal: "Nature Quantum Information", year: "2024", type: "Journal" },
+                                            { title: "Biomedical Signal Processing Using Neural Networks", journal: "Medical Engineering & Physics", year: "2024", type: "Journal" },
+                                            { title: "Autonomous Drone Navigation System", journal: "US Patent #12,345,678", year: "2025", type: "Patent" }
+                                        ].map((pub, idx) => (
+                                            <MotionDiv
+                                                key={idx}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                whileInView={{ opacity: 1, x: 0 }}
+                                                viewport={{ once: true }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                className="bg-white p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-lg transition-shadow"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xs ${pub.type === 'Patent' ? 'bg-indigo-600' : 'bg-purple-600'}`}>
+                                                        {pub.type === 'Patent' ? 'PT' : 'JP'}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-bold text-lg mb-1">{pub.title}</h3>
+                                                        <p className="text-[#5A5266] text-sm">{pub.journal}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${pub.type === 'Patent' ? 'bg-indigo-100 text-indigo-600' : 'bg-purple-100 text-purple-600'}`}>
+                                                        {pub.type}
+                                                    </span>
+                                                    <span className="text-[#5A5266] text-sm">{pub.year}</span>
+                                                </div>
+                                            </MotionDiv>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* CTA Section */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24 bg-gradient-to-br from-purple-600 to-indigo-700 text-white">
+                                <div className="max-w-4xl mx-auto text-center">
+                                    <h2 className="text-4xl md:text-5xl font-serif italic mb-6">Interested in Collaboration?</h2>
+                                    <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
+                                        I'm always looking for exciting research opportunities and collaborative projects. 
+                                        Let's push the boundaries of technology together.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                        <a href="mailto:research@studio.com" className="flex items-center justify-center gap-2 bg-white text-purple-600 px-8 py-4 rounded-full font-bold hover:scale-105 transition-transform">
+                                            <Icon name="mail" size={20} />
+                                            Get in Touch
+                                        </a>
+                                        <a href="#" className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur px-8 py-4 rounded-full font-bold hover:bg-white/20 transition-colors">
+                                            <Icon name="file-text" size={20} />
+                                            Download CV
+                                        </a>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Footer */}
+                            <footer className="py-12 px-6 md:px-12 lg:px-24 bg-[#1E1428] text-white">
+                                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                                    <p className="text-2xl font-black tracking-tighter">STUDIO<span className="text-purple-400">.</span></p>
+                                    <div className="flex gap-8 text-sm text-white/60">
+                                        <a href="aitest4.html" className="hover:text-white transition">Portfolio</a>
+                                        <a href="volunteer.html" className="hover:text-white transition">Volunteer</a>
+                                        <a href="stem.html" className="text-white">STEM</a>
+                                    </div>
+                                    <p className="text-sm text-white/40">© 2026 All Rights Reserved</p>
+                                </div>
+                            </footer>
+                        </main>
+                    </div>
+                );
+            };
+
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
+            }
+        };
+    </script>
+</body>
+</html>

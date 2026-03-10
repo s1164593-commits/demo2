@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Education | Studio Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Babel for Browser Compilation -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion (UMD Bundle) & Lucide Icons -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: none;
+        }
+        
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @media (max-width: 1024px) {
+            body { cursor: auto; }
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            200: '#DDD6FE',
+                            400: '#A78BFA',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                            900: '#4C1D95',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#FDFCFE] text-[#1E1428]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        window.onload = () => {
+            const { useState, useEffect } = React;
+            
+            const fm = window.FramerMotion || window.Motion;
+            const motion = fm ? fm.motion : null;
+            const AnimatePresence = fm ? fm.AnimatePresence : null;
+
+            if (!motion) {
+                const Fallback = ({ children }) => <div>{children}</div>;
+                window.motion = { div: Fallback, p: Fallback, h1: Fallback, section: Fallback, a: Fallback };
+                window.AnimatePresence = Fallback;
+            }
+
+            const Icon = ({ name, size = 20, className = "" }) => {
+                useEffect(() => {
+                    if (window.lucide) lucide.createIcons();
+                }, [name]);
+                return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+            };
+
+            const CustomCursor = () => {
+                const [position, setPosition] = useState({ x: 0, y: 0 });
+                const [isHovering, setIsHovering] = useState(false);
+
+                useEffect(() => {
+                    const moveCursor = (e) => setPosition({ x: e.clientX, y: e.clientY });
+                    window.addEventListener('mousemove', moveCursor);
+                    return () => window.removeEventListener('mousemove', moveCursor);
+                }, []);
+
+                const MotionDiv = motion ? motion.div : 'div';
+
+                return (
+                    <MotionDiv
+                        className="fixed top-0 left-0 w-6 h-6 rounded-full border-2 border-purple-500 pointer-events-none z-[9999] hidden lg:block"
+                        animate={{
+                            x: position.x - 12,
+                            y: position.y - 12,
+                            scale: isHovering ? 2.5 : 1,
+                            backgroundColor: isHovering ? 'rgba(124, 77, 255, 0.1)' : 'transparent'
+                        }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 250, mass: 0.5 }}
+                    />
+                );
+            };
+
+            const LessonCard = ({ lesson, index }) => {
+                const MotionDiv = motion ? motion.div : 'div';
+                return (
+                    <MotionDiv
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-500 border border-purple-50 group"
+                    >
+                        <div className="flex items-start justify-between mb-6">
+                            <div className="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                                <Icon name={lesson.icon} size={24} />
+                            </div>
+                            <span className="text-xs uppercase tracking-widest text-purple-400 font-bold">{lesson.level}</span>
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 group-hover:text-purple-600 transition-colors">{lesson.title}</h3>
+                        <p className="text-[#5A5266] mb-6 leading-relaxed">{lesson.description}</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {lesson.tags.map((tag, i) => (
+                                <span key={i} className="text-xs px-3 py-1 bg-purple-50 text-purple-600 rounded-full font-medium">{tag}</span>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between pt-4 border-t border-purple-50">
+                            <div className="flex items-center gap-2 text-sm text-[#5A5266]">
+                                <Icon name="users" size={16} />
+                                <span>{lesson.students}+ students</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-[#5A5266]">
+                                <Icon name="clock" size={16} />
+                                <span>{lesson.duration}</span>
+                            </div>
+                        </div>
+                    </MotionDiv>
+                );
+            };
+
+            const App = () => {
+                const [isMenuOpen, setIsMenuOpen] = useState(false);
+                const MotionDiv = motion ? motion.div : 'div';
+                const MotionP = motion ? motion.p : 'p';
+                const MotionH1 = motion ? motion.h1 : 'h1';
+                const MotionH2 = motion ? motion.h2 : 'h2';
+                const AP = AnimatePresence || React.Fragment;
+
+                const lessons = [
+                    {
+                        title: "Introduction to Coding",
+                        icon: "code-2",
+                        level: "Beginner",
+                        description: "Teaching fundamental programming concepts using Scratch and Python to young learners aged 8-12.",
+                        tags: ["Python", "Scratch", "Logic"],
+                        students: 150,
+                        duration: "8 weeks"
+                    },
+                    {
+                        title: "Web Development Basics",
+                        icon: "globe",
+                        level: "Intermediate",
+                        description: "Guiding students through HTML, CSS, and JavaScript to build their first interactive websites.",
+                        tags: ["HTML", "CSS", "JavaScript"],
+                        students: 85,
+                        duration: "10 weeks"
+                    },
+                    {
+                        title: "Data Science for Teens",
+                        icon: "bar-chart-3",
+                        level: "Advanced",
+                        description: "Introducing data analysis, visualization, and basic machine learning concepts using Python.",
+                        tags: ["Python", "Pandas", "ML"],
+                        students: 45,
+                        duration: "12 weeks"
+                    },
+                    {
+                        title: "Robotics Workshop",
+                        icon: "cpu",
+                        level: "Beginner",
+                        description: "Hands-on workshops teaching robotics fundamentals using Arduino and Raspberry Pi.",
+                        tags: ["Arduino", "Raspberry Pi", "Electronics"],
+                        students: 60,
+                        duration: "6 weeks"
+                    },
+                    {
+                        title: "Mobile App Development",
+                        icon: "smartphone",
+                        level: "Intermediate",
+                        description: "Teaching students to create mobile applications using React Native and Flutter.",
+                        tags: ["React Native", "Flutter", "Mobile"],
+                        students: 35,
+                        duration: "8 weeks"
+                    },
+                    {
+                        title: "Game Design Principles",
+                        icon: "gamepad-2",
+                        level: "Beginner",
+                        description: "Exploring game design concepts, mechanics, and development using Unity and Godot.",
+                        tags: ["Unity", "Godot", "Game Design"],
+                        students: 70,
+                        duration: "10 weeks"
+                    }
+                ];
+
+                const stats = [
+                    { number: "445+", label: "Students Taught" },
+                    { number: "54+", label: "Weeks of Teaching" },
+                    { number: "6", label: "Course Types" },
+                    { number: "100%", label: "Passion" }
+                ];
+
+                return (
+                    <div className="min-h-screen bg-[#FDFCFE] text-[#1E1428] selection:bg-purple-100 selection:text-purple-700 overflow-x-hidden">
+                        <CustomCursor />
+
+                        {/* Navigation */}
+                        <nav className="fixed top-0 w-full z-50 px-6 py-8 md:px-12 flex justify-between items-center backdrop-blur-sm bg-white/30">
+                            <MotionDiv 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-2xl font-black tracking-tighter"
+                            >
+                                <a href="aitest4.html">STUDIO<span className="text-purple-600">.</span></a>
+                            </MotionDiv>
+
+                            <div className="hidden md:flex gap-10 text-xs uppercase tracking-[0.2em] font-bold">
+                                <a href="aitest4.html" className="hover:text-purple-600 transition-colors relative group">
+                                    Works
+                                    <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-purple-600 transition-all group-hover:w-full"></span>
+                                </a>
+                                <a href="volunteer.html" className="text-purple-600 relative group">
+                                    Volunteer
+                                    <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-purple-600"></span>
+                                </a>
+                                <a href="stem.html" className="hover:text-purple-600 transition-colors relative group">
+                                    STEM
+                                    <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-purple-600 transition-all group-hover:w-full"></span>
+                                </a>
+                            </div>
+
+                            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                {isMenuOpen ? <Icon name="x" /> : <Icon name="menu" />}
+                            </button>
+                        </nav>
+
+                        {/* Mobile Menu Overlay */}
+                        <AP>
+                            {isMenuOpen && (
+                                <MotionDiv 
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center gap-8 text-3xl font-serif italic"
+                                >
+                                    <a href="aitest4.html" onClick={() => setIsMenuOpen(false)}>Portfolio</a>
+                                    <a href="volunteer.html" onClick={() => setIsMenuOpen(false)}>Volunteer</a>
+                                    <a href="stem.html" onClick={() => setIsMenuOpen(false)}>STEM Projects</a>
+                                </MotionDiv>
+                            )}
+                        </AP>
+
+                        <main className="pt-24">
+                            {/* Hero Section */}
+                            <section className="relative py-20 px-6 md:px-12 lg:px-24 overflow-hidden">
+                                <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-purple-200/30 blur-[120px] rounded-full"></div>
+                                
+                                <div className="max-w-6xl mx-auto relative z-10">
+                                    <MotionP 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="text-sm uppercase tracking-[0.4em] text-purple-600 font-bold mb-6"
+                                    >
+                                        Giving Back to Community
+                                    </MotionP>
+                                    
+                                    <MotionH1 
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                        className="text-5xl md:text-7xl font-serif italic leading-tight tracking-tight"
+                                    >
+                                        Volunteer <br />
+                                        <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+                                            Education.
+                                        </span>
+                                    </MotionH1>
+
+                                    <MotionDiv 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.6 }}
+                                        className="mt-8 max-w-2xl"
+                                    >
+                                        <p className="text-xl text-[#5A5266] leading-relaxed">
+                                            Sharing knowledge and inspiring the next generation of creators through hands-on workshops and personalized mentorship.
+                                        </p>
+                                    </MotionDiv>
+                                </div>
+                            </section>
+
+                            {/* Stats Section */}
+                            <section className="py-16 px-6 md:px-12 lg:px-24 bg-white">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                        {stats.map((stat, index) => (
+                                            <MotionDiv
+                                                key={index}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                viewport={{ once: true }}
+                                                transition={{ delay: index * 0.1 }}
+                                                className="text-center"
+                                            >
+                                                <p className="text-4xl md:text-5xl font-black text-purple-600 mb-2">{stat.number}</p>
+                                                <p className="text-sm text-[#5A5266] uppercase tracking-wider">{stat.label}</p>
+                                            </MotionDiv>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Teaching Philosophy */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="grid md:grid-cols-2 gap-16 items-center">
+                                        <MotionDiv
+                                            initial={{ opacity: 0, x: -30 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                        >
+                                            <h2 className="text-4xl font-serif italic mb-6">Teaching Philosophy</h2>
+                                            <p className="text-lg text-[#5A5266] leading-relaxed mb-6">
+                                                I believe that everyone can learn to code. My approach focuses on 
+                                                <span className="text-purple-600 font-medium italic"> hands-on learning</span>, 
+                                                real-world projects, and building confidence through incremental challenges.
+                                            </p>
+                                            <p className="text-lg text-[#5A5266] leading-relaxed">
+                                                Every student has unique potential. My role is to unlock it through patience, 
+                                                encouragement, and creating a safe space for experimentation and failure.
+                                            </p>
+                                        </MotionDiv>
+                                        <MotionDiv
+                                            initial={{ opacity: 0, x: 30 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                            className="relative"
+                                        >
+                                            <div className="absolute -inset-4 bg-purple-50 rounded-2xl -z-10"></div>
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=800" 
+                                                className="rounded-xl w-full"
+                                                alt="Teaching"
+                                            />
+                                        </MotionDiv>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Lessons Grid */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="mb-16">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-purple-600 font-bold mb-4">What I Teach</p>
+                                        <h2 className="text-4xl md:text-5xl font-serif italic">Featured Lessons</h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {lessons.map((lesson, idx) => (
+                                            <LessonCard key={idx} lesson={lesson} index={idx} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Testimonials */}
+                            <section className="py-20 px-6 md:px-12 lg:px-24 bg-purple-50">
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="text-center mb-16">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-purple-600 font-bold mb-4">Testimonials</p>
+                                        <h2 className="text-4xl md:text-5xl font-serif italic">What Students Say</h2>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-3 gap-8">
+                                        {[
+                                            { quote: "The best coding teacher I've ever had. Patient, knowledgeable, and always makes learning fun!", name: "Alex Chen", role: "High School Student" },
+                                            { quote: "Thanks to these lessons, I got into my dream computer science program. Forever grateful!", name: "Sarah Kim", role: "College Freshman" },
+                                            { quote: "My son went from being afraid of computers to building his own apps. Incredible transformation!", name: "Maria Garcia", role: "Parent" }
+                                        ].map((testimonial, idx) => (
+                                            <MotionDiv
+                                                key={idx}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                viewport={{ once: true }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                className="bg-white p-8 rounded-2xl"
+                                            >
+                                                <p className="text-[#5A5266] italic mb-6">"{testimonial.quote}"</p>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
+                                                        {testimonial.name[0]}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold">{testimonial.name}</p>
+                                                        <p className="text-sm text-[#5A5266]">{testimonial.role}</p>
+                                                    </div>
+                                                </div>
+                                            </MotionDiv>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Footer */}
+                            <footer className="py-12 px-6 md:px-12 lg:px-24 bg-[#1E1428] text-white">
+                                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                                    <p className="text-2xl font-black tracking-tighter">STUDIO<span className="text-purple-400">.</span></p>
+                                    <div className="flex gap-8 text-sm text-white/60">
+                                        <a href="aitest4.html" className="hover:text-white transition">Portfolio</a>
+                                        <a href="volunteer.html" className="text-white">Volunteer</a>
+                                        <a href="stem.html" className="hover:text-white transition">STEM</a>
+                                    </div>
+                                    <p className="text-sm text-white/40">© 2026 All Rights Reserved</p>
+                                </div>
+                            </footer>
+                        </main>
+                    </div>
+                );
+            };
+
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
+            }
+        };
+    </script>
+</body>
+</html>
